@@ -12,7 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SignupSuccess from "./pages/SignupSuccess";
 import KitConfiguratorAI from "./components/KitConfiguratorAI";
-import Admin from "./pages/Admin";
+import Admin from "./pages/admin";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./components/CategoryPage"; // Import your CategoryPage
 
