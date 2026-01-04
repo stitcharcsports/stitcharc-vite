@@ -197,6 +197,38 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Price formatting helper function
+const formatPrice = (price: string | number): string => {
+  if (typeof price === 'string') {
+    // Remove existing dollar signs and format properly
+    const numericPrice = price.replace(/[^\d.-]/g, '');
+    const priceNum = parseFloat(numericPrice);
+    if (isNaN(priceNum)) return price;
+    
+    // Format with thousand separators
+    return priceNum.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+  
+  // If price is number
+  return price.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+
+// Calculate discount percentage
+const calculateDiscount = (original: string | number, current: string | number): number => {
+  const originalNum = typeof original === 'string' ? parseFloat(original.replace(/[^\d.-]/g, '')) : original;
+  const currentNum = typeof current === 'string' ? parseFloat(current.replace(/[^\d.-]/g, '')) : current;
+  
+  if (isNaN(originalNum) || isNaN(currentNum) || originalNum <= currentNum) return 0;
+  
+  return Math.round(((originalNum - currentNum) / originalNum) * 100);
+};
+
 // Placeholder image as SVG data URI
 const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NjYyIgc3Ryb2tlLXdpZHRoPSIxIj48cmVjdCB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHg9IjIiIHk9IjIiIHJ4PSIyIi8+PGxpbmUgeDE9IjgiIHkxPSI4IiB4Mj0iMTYiIHkyPSIxNiIvPjxsaW5lIHgxPSIxNiIgeTE9IjgiIHgyPSI4IiB5Mj0iMTYiLz48L3N2Zz4=';
 
@@ -233,6 +265,7 @@ type Product = {
   category: string;
   image: string | string[];
   price: string;
+  originalPrice?: string;
   moq: string;
   features: string[];
   badge: string;
@@ -460,8 +493,18 @@ const ProductPreview = ({
     });
   };
 
+  // Handle modal background click
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={handleBackgroundClick}
+    >
       <div className="bg-background rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-start mb-6">
@@ -469,7 +512,12 @@ const ProductPreview = ({
               <h2 className="text-2xl font-bold">{product.name}</h2>
               <p className="text-muted-foreground">{product.category}</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose} 
+              className="rounded-full hover:bg-gray-100"
+            >
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -502,57 +550,107 @@ const ProductPreview = ({
             </div>
 
             <div>
-              <div className="flex items-center mb-4">
-                <div className="flex items-center mr-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star 
-                      key={star}
-                      className={`w-4 h-4 ${star <= (product.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`}
-                    />
-                  ))}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    ({reviews.length} reviews)
+              {/* UPDATED PRICE SECTION - More Professional */}
+              <div className="mb-6 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border">
+                {/* Price with discount if available */}
+                {product.originalPrice && (
+                  <div className="flex items-center mb-2">
+                    <span className="text-gray-500 line-through text-sm mr-3">
+                      ${formatPrice(product.originalPrice)}
+                    </span>
+                    <Badge className="bg-red-500 text-white text-xs px-2 py-0.5">
+                      Save {calculateDiscount(product.originalPrice, product.price)}%
+                    </Badge>
+                  </div>
+                )}
+                
+                {/* Main Price */}
+                <div className="flex items-baseline">
+                  <span className="text-gray-600 dark:text-gray-400 text-lg mr-1 font-medium">USD</span>
+                  <span className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+                    ${formatPrice(product.price)}
                   </span>
+                  <span className="text-gray-500 text-sm ml-2">per unit</span>
                 </div>
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                  {product.moq} MOQ
-                </Badge>
+                
+                {/* MOQ and Rating */}
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center">
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs font-medium">
+                      <Package className="w-3 h-3 mr-1" />
+                      MOQ: {product.moq}
+                    </Badge>
+                    <span className="text-xs text-gray-500 ml-2 hidden sm:inline">
+                      • Bulk discounts available
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="flex items-center mr-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star}
+                          className={`w-4 h-4 ${star <= (product.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      ({reviews.length} reviews)
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Free shipping notice */}
+                <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center">
+                  <Check className="w-3 h-3 mr-1" />
+                  Free shipping on orders above $500
+                </div>
               </div>
 
               <div className="space-y-4 mb-6">
-                <h3 className="text-2xl font-bold">{product.price}</h3>
-                <p className="text-muted-foreground">{product.description || "No description available."}</p>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {product.description || "No description available."}
+                </p>
                 
                 {product.features && product.features.length > 0 && (
-                  <ul className="space-y-2">
-                    {product.features.map((feature, index) => (
-                      <li key={index} className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <Check className="w-4 h-4 text-emerald-500 mr-2" />
+                      Key Features
+                    </h4>
+                    <ul className="space-y-2">
+                      {product.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
 
               <div className="space-y-4 mb-6">
                 {product.colors && product.colors.length > 0 && (
                   <div>
-                    <Label>Color</Label>
-                    <div className="flex space-x-2 mt-2">
+                    <Label className="font-medium mb-2 block">Color Selection</Label>
+                    <div className="flex flex-wrap gap-2">
                       {product.colors.map((color) => (
                         <Button 
                           key={color}
                           variant={selectedColor === color ? "default" : "outline"}
                           size="sm" 
-                          className="flex items-center"
+                          className="flex items-center px-3"
                           onClick={() => setSelectedColor(color)}
                         >
                           <span 
-                            className="w-4 h-4 rounded-full mr-2" 
+                            className="w-3 h-3 rounded-full mr-2 border border-gray-300" 
                             style={{ backgroundColor: color.toLowerCase() }}
                           />
                           {color}
+                          {selectedColor === color && (
+                            <Check className="w-3 h-3 ml-1" />
+                          )}
                         </Button>
                       ))}
                     </div>
@@ -561,14 +659,15 @@ const ProductPreview = ({
 
                 {product.sizes && product.sizes.length > 0 && (
                   <div>
-                    <Label>Size</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <Label className="font-medium mb-2 block">Size Options</Label>
+                    <div className="grid grid-cols-4 gap-2">
                       {product.sizes.map((size) => (
                         <Button 
                           key={size} 
                           variant={selectedSize === size ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedSize(size)}
+                          className="text-sm"
                         >
                           {size}
                         </Button>
@@ -578,23 +677,36 @@ const ProductPreview = ({
                 )}
 
                 <div>
-                  <Label>Quantity</Label>
-                  <div className="flex items-center mt-2 space-x-4">
+                  <Label className="font-medium mb-2 block">Quantity</Label>
+                  <div className="flex items-center max-w-xs">
                     <Button 
                       variant="outline" 
                       size="icon" 
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="rounded-r-none border-r-0"
                     >
                       -
                     </Button>
-                    <span className="font-medium">{quantity}</span>
+                    <div className="flex-1 border-y py-2 text-center">
+                      <span className="font-medium text-lg">{quantity}</span>
+                      <div className="text-xs text-gray-500 mt-1">units</div>
+                    </div>
                     <Button 
                       variant="outline" 
                       size="icon" 
                       onClick={() => setQuantity(quantity + 1)}
+                      className="rounded-l-none border-l-0"
                     >
                       +
                     </Button>
+                    <div className="ml-4 text-sm">
+                      <div className="font-medium">Total: ${(parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity).toFixed(2)}</div>
+                      {quantity >= parseInt(product.moq) ? (
+                        <div className="text-emerald-600 text-xs">MOQ requirement met ✓</div>
+                      ) : (
+                        <div className="text-amber-600 text-xs">Add {parseInt(product.moq) - quantity} more for MOQ</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -624,7 +736,7 @@ const ProductPreview = ({
             {reviews.length > 0 ? (
               <div className="space-y-6">
                 {reviews.map((review) => (
-                  <div key={review.id} className="border-b pb-6 last:border-b-0">
+                  <div key={review.id} className="border rounded-lg p-4 hover:border-primary/50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-medium">{review.name}</h4>
@@ -644,12 +756,15 @@ const ProductPreview = ({
                       </div>
                       <span className="text-sm text-muted-foreground">{review.date}</span>
                     </div>
-                    <p className="text-muted-foreground">{review.comment}</p>
+                    <p className="text-gray-700 dark:text-gray-300 mt-2">{review.comment}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
+              <div className="text-center py-8 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
+                <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
+              </div>
             )}
 
             <div className="mt-8 border-t pt-8">
@@ -674,9 +789,10 @@ const ProductPreview = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => setNewReview({...newReview, rating: star})}
+                        className="hover:bg-yellow-50 hover:text-yellow-500"
                       >
                         <Star 
-                          className={`w-5 h-5 ${star <= newReview.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`}
+                          className={`w-5 h-5 ${star <= newReview.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
                         />
                       </Button>
                     ))}
@@ -704,7 +820,7 @@ const ProductPreview = ({
                 {relatedProducts.map((relatedProduct) => (
                   <div 
                     key={relatedProduct.id} 
-                    className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                    className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer hover:border-primary/50"
                     onClick={() => {
                       onClose();
                       setTimeout(() => {
@@ -721,7 +837,10 @@ const ProductPreview = ({
                       <h4 className="font-medium">{relatedProduct.name}</h4>
                       <p className="text-sm text-muted-foreground mb-2">{relatedProduct.category}</p>
                       <div className="flex justify-between items-center">
-                        <span className="font-bold">{relatedProduct.price}</span>
+                        <div>
+                          <div className="font-bold text-lg">${formatPrice(relatedProduct.price)}</div>
+                          <div className="text-xs text-gray-500">MOQ: {relatedProduct.moq}</div>
+                        </div>
                         <Badge variant="secondary" className={getBadgeVariant(relatedProduct.badge)}>
                           {relatedProduct.badge}
                         </Badge>
@@ -1415,11 +1534,11 @@ const NewArrivals = () => {
 
   return (
     <section className="section-padding bg-gradient-subtle">
-      <div className="container mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">New Arrivals</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Discover our newest products added in the last 30 days. Fresh designs and innovative features.
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-4xl font-bold mb-3">New Arrivals</h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
+            Discover our newest products. Fresh designs and innovative features.
           </p>
         </div>
 
@@ -1427,74 +1546,92 @@ const NewArrivals = () => {
           <div className="text-center py-12">
             <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-medium mb-2">No New Arrivals</h3>
-            <p className="text-muted-foreground mb-6">No new products have been added recently</p>
             <Button variant="outline" onClick={() => navigate('/products')}>
               Browse All Products
             </Button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-12">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-10">
               {products.map((product) => (
-                <div key={product.id} className="card-brand group overflow-hidden">
-                  <div className="relative overflow-hidden rounded-t-lg">
+                <div key={product.id} className="card-brand group overflow-hidden flex flex-col h-full bg-card border rounded-xl hover:shadow-lg transition-shadow">
+                  <div className="relative aspect-[4/5] md:aspect-video overflow-hidden">
                     <ProductImage 
                       src={product.image} 
                       alt={product.name}
-                      className="w-full h-48 md:h-64"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-2 md:top-4 right-2 md:right-4">
-                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                        New Arrival
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-blue-500/90 text-[10px] md:text-xs px-2 py-0">
+                        New
                       </Badge>
                     </div>
+                    
+                    {/* QUICK VIEW BUTTON - NOW VISIBLE ON BOTH MOBILE AND DESKTOP */}
                     <Button 
                       variant="secondary" 
                       size="sm" 
-                      className="absolute bottom-2 md:bottom-4 left-2 md:left-4 opacity-0 group-hover:opacity-100 transition-opacity text-xs md:text-sm"
+                      className="absolute bottom-2 left-2 opacity-90 md:opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs px-2 py-1 h-6 md:h-8"
                       onClick={() => setPreviewProduct(product)}
                     >
-                      <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                      Quick View
+                      <Eye className="w-3 h-3 mr-1" />
+                      <span className="hidden xs:inline">Quick View</span>
+                      <span className="xs:hidden">View</span>
+                    </Button>
+                    
+                    {/* FAVORITE BUTTON */}
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="absolute top-2 left-2 bg-white/80 hover:bg-white rounded-full w-6 h-6 md:w-8 md:h-8"
+                      onClick={() => toggleFavorite(product.id)}
+                    >
+                      <Heart className={`w-3 h-3 md:w-4 md:h-4 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                     </Button>
                   </div>
-                  <div className="p-4 md:p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-bold text-sm md:text-lg line-clamp-1">{product.name}</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground">{product.category}</p>
-                      </div>
-                      <span className="font-bold text-primary text-sm md:text-base">{product.price}</span>
-                    </div>
-                    <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4 line-clamp-2">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center mb-3 md:mb-4">
-                      <div className="flex items-center mr-1 md:mr-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star 
-                            key={star}
-                            className={`w-3 h-3 md:w-4 md:h-4 ${star <= (product.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {product.reviews?.length || 0} reviews
-                      </span>
+
+                  <div className="p-3 md:p-6 flex flex-col flex-grow">
+                    <div className="mb-3">
+                      <h3 className="font-bold text-sm md:text-lg line-clamp-1 mb-1">{product.name}</h3>
+                      <p className="text-[10px] md:text-sm text-muted-foreground uppercase tracking-wider">{product.category}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                    {/* UPDATED PRICE SECTION FOR PRODUCT CARDS */}
+                    <div className="mb-4">
+                      <div className="flex items-baseline">
+                        <span className="text-gray-500 text-sm mr-1">$</span>
+                        <span className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                          {formatPrice(product.price)}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-1">/unit</span>
+                      </div>
+                      
+                      <div className="flex items-center mt-1">
+                        <Badge variant="outline" className="text-[10px] px-2 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">
+                          MOQ: {product.moq}
+                        </Badge>
+                        <div className="hidden sm:flex items-center ml-2">
+                          <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 mr-0.5" />
+                          <span className="text-[10px] text-gray-600">
+                            {product.rating || 4.5}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Buttons Container */}
+                    <div className="mt-auto space-y-2 md:space-y-0 md:grid md:grid-cols-2 md:gap-3">
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="w-full hover:bg-primary/10 hover:text-primary transition-colors text-xs md:text-sm"
+                        className="w-full h-8 md:h-10 text-[10px] md:text-sm"
                         onClick={() => setMoqProduct(product)}
                       >
-                        <Info className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                        <Info className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                         MOQ Info
                       </Button>
                       <Button 
-                        className="w-full btn-gradient text-xs md:text-sm hover:opacity-90 transition-opacity"
+                        className="w-full h-8 md:h-10 btn-gradient text-[10px] md:text-sm"
                         onClick={() => setSampleRequestProduct(product)}
                       >
                         Request Sample
@@ -1507,7 +1644,7 @@ const NewArrivals = () => {
 
             <div className="text-center">
               <Button 
-                className="btn-hero group"
+                className="btn-hero group w-full md:w-auto"
                 onClick={handleViewAll}
               >
                 View All Products
@@ -1518,10 +1655,14 @@ const NewArrivals = () => {
         )}
       </div>
 
+      {/* Modals - Ensure proper state management */}
       {previewProduct && (
         <ProductPreview 
           product={previewProduct} 
-          onClose={() => setPreviewProduct(null)}
+          onClose={() => {
+            console.log('Closing preview modal');
+            setPreviewProduct(null);
+          }} 
           relatedProducts={products.filter(p => p.id !== previewProduct.id).slice(0, 3)}
           setPreviewProduct={setPreviewProduct}
         />
@@ -1529,15 +1670,21 @@ const NewArrivals = () => {
 
       {moqProduct && (
         <MOQInfoModal 
-          product={moqProduct}
-          onClose={() => setMoqProduct(null)}
+          product={moqProduct} 
+          onClose={() => {
+            console.log('Closing MOQ modal');
+            setMoqProduct(null);
+          }} 
         />
       )}
 
       {sampleRequestProduct && (
         <SampleRequestForm 
-          product={sampleRequestProduct}
-          onClose={() => setSampleRequestProduct(null)}
+          product={sampleRequestProduct} 
+          onClose={() => {
+            console.log('Closing sample request modal');
+            setSampleRequestProduct(null);
+          }} 
         />
       )}
     </section>

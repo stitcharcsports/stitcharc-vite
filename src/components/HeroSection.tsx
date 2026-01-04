@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Play, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Play, CheckCircle, Shield, Clock, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   const [currentPhrase, setCurrentPhrase] = useState(0);
   
   const rotatingPhrases = [
-    "OEM Experts",
-    "Private Label Ready", 
-    "72hr Global Sampling",
-    "ISO Certified Excellence",
-    "Premium Quality Guaranteed"
+    "Premium Quality Sportswear",
+    "Custom OEM Manufacturing", 
+    "Fast Global Shipping",
+    "Competitive Pricing",
+    "ISO 9001 Certified"
+  ];
+
+  const features = [
+    { icon: <CheckCircle className="w-5 h-5" />, text: "Custom Designs & Logos" },
+    { icon: <Shield className="w-5 h-5" />, text: "Quality Guaranteed" },
+    { icon: <Clock className="w-5 h-5" />, text: "Fast Turnaround" },
+    { icon: <Truck className="w-5 h-5" />, text: "Worldwide Delivery" },
   ];
 
   useEffect(() => {
@@ -23,148 +28,180 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background with gradient */}
-      <div className="absolute inset-0 bg-gradient-hero"></div>
-      
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-glow/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-glow/25 rounded-full blur-2xl animate-glow"></div>
+    <section className="relative min-h-screen flex items-center bg-gradient-to-br from-blue-900 via-gray-900 to-blue-950 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }} />
       </div>
+      
+      {/* Gradient Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl" />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Content */}
-          <div className="text-center lg:text-left">
-            {/* Badge */}
-            <Badge className="mb-6 bg-accent/20 text-accent-foreground border-accent/30 hover:bg-accent/30 transition-all duration-300">
-              <Sparkles className="w-4 h-4 mr-2" />
-              #1 Pakistani Sportswear Exporter
-            </Badge>
-
-            {/* Main headline */}
-            <h1 className="text-5xl lg:text-7xl font-display font-bold text-primary-foreground mb-6 leading-tight">
-              Pakistan's Premier{" "}
-              <span className="text-accent animate-glow">Sportswear</span>{" "}
-              Exporter
-            </h1>
-
-            {/* Dynamic rotating phrase */}
-            <div className="h-16 mb-8 flex items-center justify-center lg:justify-start">
-              <div className="text-2xl lg:text-3xl font-medium text-primary-foreground/90 transition-all duration-500">
-                <Zap className="inline w-8 h-8 mr-3 text-accent" />
-                <span key={currentPhrase} className="animate-fade-in">
-                  {rotatingPhrases[currentPhrase]}
-                </span>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              {/* Badge */}
+              <div className="inline-block mb-8">
+                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full text-white text-sm font-medium shadow-lg">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" />
+                  Leading Sportswear Manufacturer
+                </div>
               </div>
-            </div>
 
-            {/* Description */}
-            <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Transform your sportswear business with our premium OEM manufacturing. 
-              From concept to delivery, we power global brands with exceptional quality and lightning-fast turnaround.
-            </p>
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Premium{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                  Sportswear
+                </span>{" "}
+                Manufacturing
+              </h1>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link to="/kit-configurator">
-                <Button className="btn-hero group">
-                  Start Your Kit
-                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
-              
-              <Button 
-                variant="outline" 
-                className="bg-white/10 text-primary-foreground border-white/20 hover:bg-white/20 backdrop-blur-sm rounded-2xl px-8 py-4 text-lg transition-all duration-300"
-                onClick={() => document.getElementById('quote-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Play className="mr-2 w-5 h-5" />
-                Get Instant Quote
-              </Button>
-            </div>
-
-            {/* Trust indicators */}
-            <div className="mt-12 flex flex-wrap items-center gap-6 justify-center lg:justify-start text-primary-foreground/70">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">ISO 9001 Certified</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <span className="text-sm font-medium">500+ Global Clients</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <span className="text-sm font-medium">25+ Countries</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side - Kit configurator preview */}
-          <div className="lg:block">
-            <div className="card-brand bg-white/10 backdrop-blur-lg border-white/20 p-8 max-w-md mx-auto">
-              <h3 className="text-2xl font-display font-bold text-primary-foreground mb-6 text-center">
-                Kit Configurator Preview
-              </h3>
-              
-              <div className="space-y-6">
-                {/* Color picker */}
-                <div>
-                  <label className="block text-sm font-medium text-primary-foreground/80 mb-3">
-                    Primary Color
-                  </label>
-                  <div className="flex space-x-3">
-                    {['#0033A0', '#D1FF00', '#FF6B35', '#8B5CF6', '#EF4444'].map((color) => (
-                      <button
-                        key={color}
-                        className="w-10 h-10 rounded-xl border-2 border-white/30 hover:scale-110 transition-transform"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
+              {/* Rotating Phrase */}
+              <div className="mb-8">
+                <div className="text-xl lg:text-2xl text-white font-medium h-12 flex items-center justify-center lg:justify-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                    <span>{rotatingPhrases[currentPhrase]}</span>
                   </div>
                 </div>
+              </div>
 
-                {/* Fabric selection */}
-                <div>
-                  <label className="block text-sm font-medium text-primary-foreground/80 mb-3">
-                    Fabric Type
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['Polyester', 'Cotton Blend', 'Performance', 'Eco-Friendly'].map((fabric) => (
-                      <button
-                        key={fabric}
-                        className="px-3 py-2 text-xs bg-white/10 text-primary-foreground rounded-lg hover:bg-white/20 transition-colors border border-white/20"
-                      >
-                        {fabric}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Description */}
+              <p className="text-lg text-white/80 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Transform your sportswear brand with Pakistan's premier manufacturer. 
+                We deliver exceptional quality, custom designs, and reliable delivery 
+                for brands worldwide.
+              </p>
 
-                {/* Logo upload */}
-                <div>
-                  <label className="block text-sm font-medium text-primary-foreground/80 mb-3">
-                    Upload Logo
-                  </label>
-                  <div className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center">
-                    <div className="w-12 h-12 bg-accent/20 rounded-xl mx-auto mb-2 flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-accent" />
+              {/* Features */}
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3 text-white">
+                    <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                      {feature.icon}
                     </div>
-                    <p className="text-sm text-primary-foreground/70">Drag & drop or click</p>
+                    <span className="text-sm font-medium">{feature.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105">
+                  <span className="flex items-center">
+                    Request Quote
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  className="bg-transparent text-white border-white/30 hover:bg-white/10 hover:border-white/50 rounded-lg px-8 py-6 text-lg transition-all hover:scale-105"
+                >
+                  <Play className="mr-2 w-5 h-5" />
+                  View Products
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="mt-12 grid grid-cols-3 gap-6 max-w-lg">
+                <div className="text-center lg:text-left">
+                  <div className="text-3xl font-bold text-white mb-1">500+</div>
+                  <div className="text-white/70 text-sm">Global Brands</div>
+                </div>
+                <div className="text-center lg:text-left">
+                  <div className="text-3xl font-bold text-white mb-1">25+</div>
+                  <div className="text-white/70 text-sm">Countries</div>
+                </div>
+                <div className="text-center lg:text-left">
+                  <div className="text-3xl font-bold text-white mb-1">10K+</div>
+                  <div className="text-white/70 text-sm">Monthly Production</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right - Product Card */}
+            <div className="relative">
+              {/* Main Product Card */}
+              <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl">
+                {/* Product Image */}
+                <div className="relative rounded-xl overflow-hidden mb-6 bg-gradient-to-br from-blue-900/30 to-cyan-900/30 p-8">
+                  <div className="relative mx-auto w-48 h-48">
+                    {/* Jersey Design */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-blue-600 to-cyan-600 rounded-xl transform rotate-12" />
+                    <div className="absolute inset-4 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-lg transform -rotate-6" />
+                    
+                    {/* Jersey Number */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                      <div className="text-6xl font-bold text-white">07</div>
+                    </div>
                   </div>
                 </div>
 
-                <Button className="w-full btn-gradient">
-                  Preview Your Kit
-                </Button>
+                {/* Product Details */}
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-white mb-2">Custom Team Jerseys</h3>
+                  <p className="text-white/70 mb-6">Premium quality with custom designs</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-blue-400 text-xs font-medium mb-1">MOQ</div>
+                      <div className="text-white font-bold">100+ Pcs</div>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <div className="text-cyan-400 text-xs font-medium mb-1">Lead Time</div>
+                      <div className="text-white font-bold">15-25 Days</div>
+                    </div>
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all">
+                    Request Sample
+                  </Button>
+                </div>
               </div>
+
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-500/30 rounded-full blur-md" />
+              <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-cyan-500/30 rounded-full blur-md" />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="flex flex-col items-center text-white/60">
+          <span className="text-sm mb-2">Scroll to explore</span>
+          <div className="w-6 h-10 border border-white/30 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full mt-2 animate-bounce" />
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-bounce {
+          animation: bounce 2s infinite;
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+          animation: pulse 2s infinite;
+        }
+      `}</style>
     </section>
   );
 };

@@ -16,6 +16,7 @@ import Admin from "./pages/admin";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./components/CategoryPage"; // Import your CategoryPage
 
+
 const queryClient = new QueryClient();
 
 const App = () => (
